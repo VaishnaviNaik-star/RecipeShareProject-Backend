@@ -9,14 +9,13 @@ const app = express();
 
 // ✅ Dynamic CORS setup
 const allowedOrigins = [
-  "http://localhost:3000", // local development
-  process.env.FRONTEND_URL // Render frontend
+  "http://localhost:3000",            // local development
+  process.env.FRONTEND_URL            // your deployed frontend
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return callback(null, true);
+    if (!origin) return callback(null, true); // allow non-browser requests
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     } else {
@@ -38,12 +37,15 @@ const recipeRoutes = require("./routes/recipes");
 app.use("/api/auth", authRoutes);
 app.use("/api/recipes", recipeRoutes);
 
-// Connect MongoDB
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch(err => console.log(err));
+// ✅ Connect to MongoDB Atlas
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log("MongoDB connected"))
+.catch(err => console.log("MongoDB connection error:", err));
 
-// ✅ Dynamic port (important for Render)
+// ✅ Dynamic port for Render
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
