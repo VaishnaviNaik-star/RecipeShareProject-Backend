@@ -7,30 +7,34 @@ const path = require("path");
 dotenv.config();
 const app = express();
 
-// ✅ Dynamic CORS setup
+// ✅ Allowed origins
 const allowedOrigins = [
-  "http://localhost:3000",            // local development
-  process.env.FRONTEND_URL            // your deployed frontend
+  "http://localhost:3000",                           // local development
+  process.env.FRONTEND_URL || ""                     // deployed frontend
 ];
 
+console.log("✅ Allowed Origins:", allowedOrigins);
+
+// ✅ CORS setup
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // allow non-browser requests
+    if (!origin) return callback(null, true); // allow Postman/cURL/mobile apps
     if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
+      callback(null, true);
     } else {
-      return callback(new Error("Not allowed by CORS"));
+      console.log("❌ Blocked by CORS:", origin);
+      callback(new Error("Not allowed by CORS"));
     }
   },
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
 
-// Middleware
+// ✅ Middleware
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Routes
+// ✅ Routes
 const authRoutes = require("./routes/auth");
 const recipeRoutes = require("./routes/recipes");
 
@@ -42,11 +46,10 @@ mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log("MongoDB connected"))
-.catch(err => console.log("MongoDB connection error:", err));
+.then(() => console.log("✅ MongoDB connected"))
+.catch(err => console.log("❌ MongoDB connection error:", err));
 
 // ✅ Dynamic port for Render
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
